@@ -1,0 +1,864 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="Sistema de controle de almoxarifado, estoque e produção.">
+  <title>Almoxarifado Pro</title>
+
+  <!-- Arquivo de estilos -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- TELA DE LOGIN -->
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-logo">📦</div>
+      <h1>Almoxarifado Pro</h1>
+      <p>Entre para acessar o sistema</p>
+
+      <form id="loginForm">
+        <label for="loginUser">Usuário</label>
+        <input
+          id="loginUser"
+          name="username"
+          type="text"
+          placeholder="Digite seu usuário"
+          autocomplete="username"
+          required
+        >
+
+        <label for="loginPassword">Senha</label>
+        <input
+          id="loginPassword"
+          name="password"
+          type="password"
+          placeholder="Digite sua senha"
+          autocomplete="current-password"
+          required
+        >
+
+        <button type="submit" class="btn btn-primary btn-full">
+          Entrar no sistema
+        </button>
+
+        <p id="loginMessage" class="message" role="status"></p>
+      </form>
+
+      <small>Versão local demonstrativa</small>
+    </div>
+  </section>
+
+  <!-- APLICAÇÃO PRINCIPAL -->
+  <div id="app" class="app hidden">
+
+    <!-- BARRA SUPERIOR -->
+    <header class="topbar">
+      <button
+        id="menuToggle"
+        class="icon-button"
+        type="button"
+        aria-label="Abrir menu"
+        aria-controls="sidebar"
+        aria-expanded="false"
+      >☰</button>
+
+      <div class="brand">
+        <span class="brand-icon">📦</span>
+        <div>
+          <strong id="headerCompany">Almoxarifado Pro</strong>
+          <small>Controle de estoque e produção</small>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <span id="currentDate" class="current-date"></span>
+        <button
+          id="logoutButton"
+          class="btn btn-outline btn-small"
+          type="button"
+        >Sair</button>
+      </div>
+    </header>
+
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- MENU HAMBÚRGUER -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-heading">
+        <span>MENU PRINCIPAL</span>
+        <button id="menuClose" type="button" class="icon-button"
+          aria-label="Fechar menu">×</button>
+      </div>
+
+      <nav id="mainNavigation" class="navigation">
+        <button class="nav-item active" data-page="dashboard" type="button">
+          <span>📊</span> Painel geral
+        </button>
+
+        <button class="nav-item" data-page="estoque" type="button">
+          <span>📦</span> Estoque / Materiais
+        </button>
+
+        <button class="nav-item" data-page="movimentacoes" type="button">
+          <span>🔄</span> Entradas e saídas
+        </button>
+
+        <button class="nav-item" data-page="producao" type="button">
+          <span>🏭</span> Produção por setor
+        </button>
+
+        <button class="nav-item" data-page="equipe" type="button">
+          <span>👥</span> Equipe / Conferência
+        </button>
+
+        <button class="nav-item" data-page="anotacoes" type="button">
+          <span>📝</span> Anotações do dia
+        </button>
+
+        <button class="nav-item" data-page="relatorios" type="button">
+          <span>📈</span> Relatórios
+        </button>
+
+        <button class="nav-item" data-page="configuracoes" type="button">
+          <span>⚙️</span> Configurações
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="status-indicator"></span>
+        Sistema local
+        <small>Almoxarifado Pro</small>
+      </div>
+    </aside>
+
+    <!-- CONTEÚDO -->
+    <main id="mainContent" class="main-content">
+
+      <!-- PAINEL GERAL -->
+      <section id="page-dashboard" class="page active">
+        <div class="page-heading">
+          <div>
+            <h1>Painel geral</h1>
+            <p>Acompanhe as informações do almoxarifado.</p>
+          </div>
+          <button class="btn btn-primary" type="button"
+            data-action="new-material">+ Novo material</button>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <span class="stat-icon">📦</span>
+            <div>
+              <p>Materiais cadastrados</p>
+              <strong id="statMaterials">0</strong>
+            </div>
+          </article>
+
+          <article class="stat-card">
+            <span class="stat-icon">⚠️</span>
+            <div>
+              <p>Estoque baixo</p>
+              <strong id="statLowStock">0</strong>
+            </div>
+          </article>
+
+          <article class="stat-card">
+            <span class="stat-icon">🔄</span>
+            <div>
+              <p>Movimentações hoje</p>
+              <strong id="statMovements">0</strong>
+            </div>
+          </article>
+
+          <article class="stat-card">
+            <span class="stat-icon">🏭</span>
+            <div>
+              <p>Ordens em andamento</p>
+              <strong id="statProduction">0</strong>
+            </div>
+          </article>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Estoque baixo</h2>
+                <p>Materiais que precisam de atenção.</p>
+              </div>
+              <button class="btn btn-outline btn-small" type="button"
+                data-page="estoque">Ver estoque</button>
+            </div>
+
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Material</th>
+                    <th>Quantidade</th>
+                    <th>Mínimo</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboardLowStock">
+                  <tr><td colspan="4">Nenhum material para exibir.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Ações rápidas</h2>
+                <p>Acesse as funções mais utilizadas.</p>
+              </div>
+            </div>
+
+            <div class="quick-actions">
+              <button type="button" class="quick-action"
+                data-action="new-material">
+                <span>➕</span> Cadastrar material
+              </button>
+
+              <button type="button" class="quick-action"
+                data-action="new-movement">
+                <span>🔄</span> Registrar movimentação
+              </button>
+
+              <button type="button" class="quick-action"
+                data-action="new-production">
+                <span>🏭</span> Nova ordem de produção
+              </button>
+
+              <button type="button" class="quick-action"
+                data-action="new-note">
+                <span>📝</span> Nova anotação
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Últimas movimentações</h2>
+              <p>Entradas e saídas recentes de materiais.</p>
+            </div>
+            <button class="btn btn-outline btn-small" type="button"
+              data-page="movimentacoes">Ver histórico</button>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Material</th>
+                  <th>Tipo</th>
+                  <th>Quantidade</th>
+                  <th>Responsável</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardMovements">
+                <tr><td colspan="5">Nenhuma movimentação registrada.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- ESTOQUE -->
+      <section id="page-estoque" class="page">
+        <div class="page-heading">
+          <div>
+            <h1>Estoque / Materiais</h1>
+            <p>Cadastre, consulte e controle os materiais.</p>
+          </div>
+          <button type="button" class="btn btn-primary"
+            data-action="new-material">+ Cadastrar material</button>
+        </div>
+
+        <article class="panel">
+          <div class="filters">
+            <div class="filter-search">
+              <label for="inventorySearch">Pesquisar material</label>
+              <input id="inventorySearch" type="search"
+                placeholder="Nome, código ou localização...">
+            </div>
+
+            <div>
+              <label for="inventoryCategory">Categoria</label>
+              <select id="inventoryCategory">
+                <option value="">Todas as categorias</option>
+                <option value="Ferramentas">Ferramentas</option>
+                <option value="EPI">EPI</option>
+                <option value="Limpeza">Limpeza</option>
+                <option value="Elétricos">Elétricos</option>
+                <option value="Produção">Produção</option>
+                <option value="Escritório">Escritório</option>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="inventoryStatus">Situação</label>
+              <select id="inventoryStatus">
+                <option value="">Todas</option>
+                <option value="normal">Estoque normal</option>
+                <option value="baixo">Estoque baixo</option>
+                <option value="zerado">Sem estoque</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Foto</th>
+                  <th>Código</th>
+                  <th>Material</th>
+                  <th>Categoria</th>
+                  <th>Quantidade</th>
+                  <th>Mínimo</th>
+                  <th>Localização</th>
+                  <th>Situação</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryTable">
+                <tr><td colspan="9">Carregando materiais...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="inventoryEmpty" class="empty-state hidden">
+            <span>📦</span>
+            <h3>Nenhum material encontrado</h3>
+            <p>Cadastre um material ou altere a pesquisa.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- ENTRADAS E SAÍDAS -->
+      <section id="page-movimentacoes" class="page">
+        <div class="page-heading">
+          <div>
+            <h1>Entradas e saídas</h1>
+            <p>Registre cada movimentação para manter o saldo atualizado.</p>
+          </div>
+          <button type="button" class="btn btn-primary"
+            data-action="new-movement">+ Nova movimentação</button>
+        </div>
+
+        <article class="panel">
+          <div class="filters">
+            <div class="filter-search">
+              <label for="movementSearch">Pesquisar</label>
+              <input id="movementSearch" type="search"
+                placeholder="Material ou responsável...">
+            </div>
+
+            <div>
+              <label for="movementTypeFilter">Tipo</label>
+              <select id="movementTypeFilter">
+                <option value="">Todos</option>
+                <option value="entrada">Entradas</option>
+                <option value="saida">Saídas</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="movementDateFilter">Data</label>
+              <input id="movementDateFilter" type="date">
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data e hora</th>
+                  <th>Material</th>
+                  <th>Tipo</th>
+                  <th>Quantidade</th>
+                  <th>Responsável</th>
+                  <th>Destino / Origem</th>
+                  <th>Observações</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="movementsTable">
+                <tr><td colspan="8">Nenhuma movimentação registrada.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- PRODUÇÃO -->
+      <section id="page-producao" class="page">
+        <div class="page-heading">
+          <div>
+            <h1>Produção por setor</h1>
+            <p>Acompanhe solicitações, responsáveis e prazos.</p>
+          </div>
+          <button type="button" class="btn btn-primary"
+            data-action="new-production">+ Nova ordem</button>
+        </div>
+
+        <div class="stats-grid production-stats">
+          <article class="stat-card">
+            <span class="stat-icon">📋</span>
+            <div><p>Total de ordens</p><strong id="productionTotal">0</strong></div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon">⏳</span>
+            <div><p>Em andamento</p><strong id="productionRunning">0</strong></div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon">⚠️</span>
+            <div><p>Atrasadas</p><strong id="productionLate">0</strong></div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon">✅</span>
+            <div><p>Concluídas</p><strong id="productionCompleted">0</strong></div>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="filters">
+            <div>
+              <label for="productionSectorFilter">Setor</label>
+              <select id="productionSectorFilter">
+                <option value="">Todos os setores</option>
+                <option value="Palmilha">Palmilha</option>
+                <option value="Corte">Corte</option>
+                <option value="Costura">Costura</option>
+                <option value="Acabamento">Acabamento</option>
+                <option value="Inspeção">Inspeção</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="productionStatusFilter">Status</label>
+              <select id="productionStatusFilter">
+                <option value="">Todos</option>
+                <option value="pendente">Pendente</option>
+                <option value="andamento">Em andamento</option>
+                <option value="concluida">Concluída</option>
+              </select>
+            </div>
+
+            <div class="filter-search">
+              <label for="productionSearch">Pesquisar ordem</label>
+              <input id="productionSearch" type="search"
+                placeholder="Descrição ou responsável...">
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ordem</th>
+                  <th>Setor</th>
+                  <th>Descrição</th>
+                  <th>Quantidade</th>
+                  <th>Responsável</th>
+                  <th>Início</th>
+                  <th>Prazo</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="productionTable">
+                <tr><td colspan="9">Nenhuma ordem cadastrada.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- EQUIPE -->
+      <section id="page-equipe" class="page">
+        <div class="page-heading">
+          <div>
+            <h1>Equipe / Conferência</h1>
+            <p>Cadastre colaboradores e registre as conferências diárias.</p>
+          </div>
+          <button type="button" class="btn btn-primary"
+            data-action="new-employee">+ Cadastrar colaborador</button>
+        </div>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Conferência diária</h2>
+              <p>Marque OK para registrar a conferência do colaborador.</p>
+            </div>
+            <div>
+              <label for="attendanceDate">Data da conferência</label>
+              <input id="attendanceDate" type="date">
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Colaborador</th>
+                  <th>Setor</th>
+                  <th>Função</th>
+                  <th>Conferência</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="teamTable">
+                <tr><td colspan="5">Nenhum colaborador cadastrado.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Histórico de conferências</h2>
+              <p>Consulte os registros realizados.</p>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Colaborador</th>
+                  <th>Setor</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceHistory">
+                <tr><td colspan="4">Nenhuma conferência registrada.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- ANOTAÇÕES -->
+      <section id="page-anotacoes" class="page">
+        <div class="page-heading">
+          <div>
+            <h1>Anotações do dia</h1>
+            <p>Registre recados, necessidades e informações importantes.</p>
+          </div>
+          <button type="button" class="btn btn-primary"
+            data-action="new-note">+ Nova anotação</button>
+        </div>
+
+        <article class="panel">
+          <form id="noteForm" class="form-grid">
+            <div>
+              <label for="noteDate">Data</label>
+              <input id="noteDate" name="date" type="date" required>
+            </div>
+
+            <div>
+              <label for="noteResponsible">Responsável</label>
+              <input id="noteResponsible" name="responsible" type="text"
+                placeholder="Nome do responsável">
+            </div>
+
+            <div>
+              <label for="noteCategory">Categoria</label>
+              <select id="noteCategory" name="category">
+                <option value="Geral">Geral</option>
+                <option value="Estoque">Estoque</option>
+                <option value="Produção">Produção</option>
+                <option value="Compras">Compras</option>
+                <option value="Manutenção">Manutenção</option>
+                <option value="Urgente">Urgente</option>
+              </select>
+            </div>
+
+            <div class="form-span">
+              <label for="noteTitle">Título</label>
+              <input id="noteTitle" name="title" type="text"
+                placeholder="Ex.: Repor fita isolante" required>
+            </div>
+
+            <div class="form-span">
+              <label for="noteText">Anotação</label>
+              <textarea id="noteText" name="text" rows="4"
+                placeholder="Escreva os detalhes aqui..." required></textarea>
+            </div>
+
+            <div class="form-actions form-span">
+              <button class="btn btn-primary" type="submit">
+                Salvar anotação
+              </button>
+              <button class="btn btn-outline" type="reset">
+                Limpar formulário
+              </button>
+            </div>
+          </form>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Histórico de anotações</h2>
+              <p>Pesquise registros anteriores.</p>
+            </div>
+          </div>
+
+          <div class="filters">
+            <div class="filter-search">
+              <label for="notesSearch">Pesquisar anotação</label>
+              <input id="notesSearch" type="search"
+                placeholder="Título, conteúdo ou responsável...">
+            </div>
+            <div>
+              <label for="notesDateFilter">Filtrar por data</label>
+              <input id="notesDateFilter" type="date">
+            </div>
+          </div>
+
+          <div id="notesList" class="notes-list">
+            <p class="empty-message">Nenhuma anotação cadastrada.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- RELATÓRIOS -->
+      <section id="page-relatorios" class="page">
+        <div class="page-heading">
+          <div>
+            <h1>Relatórios</h1>
+            <p>Consulte os dados e exporte os registros do sistema.</p>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <span class="stat-icon">📦</span>
+            <div><p>Itens cadastrados</p><strong id="reportItemCount">0</strong></div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon">💰</span>
+            <div><p>Valor estimado do estoque</p><strong id="reportStockValue">R$ 0,00</strong></div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon">📥</span>
+            <div><p>Total de entradas</p><strong id="reportEntries">0</strong></div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon">📤</span>
+            <div><p>Total de saídas</p><strong id="reportExits">0</strong></div>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Exportar dados</h2>
+              <p>Baixe os registros para guardar ou analisar em uma planilha.</p>
+            </div>
+          </div>
+
+          <div class="export-grid">
+            <div class="export-card">
+              <span>📦</span>
+              <h3>Relatório de estoque</h3>
+              <p>Lista de materiais, quantidades e localização.</p>
+              <button type="button" class="btn btn-primary"
+                data-export="estoque">Exportar CSV</button>
+            </div>
+
+            <div class="export-card">
+              <span>🔄</span>
+              <h3>Movimentações</h3>
+              <p>Histórico de entradas e saídas.</p>
+              <button type="button" class="btn btn-primary"
+                data-export="movimentacoes">Exportar CSV</button>
+            </div>
+
+            <div class="export-card">
+              <span>🏭</span>
+              <h3>Produção</h3>
+              <p>Ordens, setores, prazos e status.</p>
+              <button type="button" class="btn btn-primary"
+                data-export="producao">Exportar CSV</button>
+            </div>
+
+            <div class="export-card">
+              <span>👥</span>
+              <h3>Equipe</h3>
+              <p>Colaboradores e registros de conferência.</p>
+              <button type="button" class="btn btn-primary"
+                data-export="equipe">Exportar CSV</button>
+            </div>
+
+            <div class="export-card">
+              <span>📝</span>
+              <h3>Anotações</h3>
+              <p>Histórico de anotações do almoxarifado.</p>
+              <button type="button" class="btn btn-primary"
+                data-export="anotacoes">Exportar CSV</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Backup completo</h2>
+              <p>Salve os dados em JSON ou restaure um backup anterior.</p>
+            </div>
+          </div>
+
+          <div class="backup-actions">
+            <button id="backupExport" type="button" class="btn btn-primary">
+              Baixar backup completo
+            </button>
+
+            <label class="btn btn-outline file-button" for="backupImport">
+              Restaurar backup
+            </label>
+            <input id="backupImport" type="file" accept=".json,application/json"
+              class="hidden">
+          </div>
+
+          <p class="help-text">
+            A restauração substitui os dados locais atuais. Faça um backup
+            antes de importar outro arquivo.
+          </p>
+        </article>
+      </section>
+
+      <!-- CONFIGURAÇÕES -->
+      <section id="page-configuracoes" class="page">
+        <div class="page-heading">
+          <div>
+            <h1>Configurações</h1>
+            <p>Personalize as informações do almoxarifado.</p>
+          </div>
+        </div>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Dados da empresa</h2>
+              <p>Informações que aparecem no cabeçalho do sistema.</p>
+            </div>
+          </div>
+
+          <form id="settingsForm" class="form-grid">
+            <div class="form-span">
+              <label for="companyName">Nome da empresa ou almoxarifado</label>
+              <input id="companyName" name="companyName" type="text"
+                placeholder="Ex.: Almoxarifado Central">
+            </div>
+
+            <div>
+              <label for="defaultStockMinimum">Estoque mínimo padrão</label>
+              <input id="defaultStockMinimum" name="defaultStockMinimum"
+                type="number" min="0" step="any" value="5">
+            </div>
+
+            <div>
+              <label for="systemLanguage">Idioma</label>
+              <select id="systemLanguage" name="language">
+                <option value="pt-BR">Português (Brasil)</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+              </select>
+              <small class="help-text">
+                A seleção do idioma será aplicada conforme o suporte
+                de tradução implementado no JavaScript.
+              </small>
+            </div>
+
+            <div class="form-span">
+              <label for="settingsNotes">Observações gerais</label>
+              <textarea id="settingsNotes" name="notes" rows="3"
+                placeholder="Informações adicionais..."></textarea>
+            </div>
+
+            <div class="form-actions form-span">
+              <button type="submit" class="btn btn-primary">
+                Salvar configurações
+              </button>
+            </div>
+          </form>
+        </article>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Dados e privacidade</h2>
+              <p>Entenda onde as informações estão armazenadas.</p>
+            </div>
+          </div>
+
+          <div class="notice notice-warning">
+            <strong>Armazenamento local</strong>
+            <p>
+              Esta versão salva informações no navegador deste dispositivo.
+              Limpar os dados do navegador pode apagar os registros.
+              Para compartilhar dados entre computadores e ter autenticação
+              segura, será necessário configurar um backend e banco de dados.
+            </p>
+          </div>
+
+          <button id="clearLocalData" type="button" class="btn btn-danger">
+            Apagar dados locais
+          </button>
+        </article>
+      </section>
+
+      <footer class="app-footer">
+        <span>Almoxarifado Pro</span>
+        <span>Controle de estoque e produção</span>
+      </footer>
+    </main>
+  </div>
+
+  <!-- MODAL REUTILIZÁVEL -->
+  <div id="modalOverlay" class="modal-overlay hidden"
+    role="presentation">
+    <section
+      id="modalContent"
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+    >
+      <div class="modal-heading">
+        <h2 id="modalTitle">Cadastro</h2>
+        <button id="modalClose" type="button" class="icon-button"
+          aria-label="Fechar janela">×</button>
+      </div>
+
+      <div id="modalBody" class="modal-body">
+        <!-- Os formulários serão inseridos pelo script.js -->
+      </div>
+    </section>
+  </div>
+
+  <!-- NOTIFICAÇÕES -->
+  <div id="toastContainer" class="toast-container"
+    aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ARQUIVO JAVASCRIPT -->
+  <script src="script.js"></script>
+</body>
+</html>
