@@ -1,864 +1,588 @@
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#101827">
-  <meta name="description" content="Sistema de controle de almoxarifado, estoque e produção.">
-  <title>Almoxarifado Pro</title>
-
-  <!-- Arquivo de estilos -->
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10131a">
+<title>Sistema de Gestão</title>
+<style>
+:root{--bg:#10131a;--panel:#191e29;--panel2:#222a38;--text:#edf2fa;--muted:#9ba8ba;--accent:#53e0ad;--red:#ff6868;--border:#303a49}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;padding:13px 16px;background:#151923;border-bottom:1px solid var(--border)}
+.brand{font-size:17px;font-weight:bold;flex:1;overflow-wrap:anywhere}
+.iconbtn{background:var(--panel2);border:1px solid var(--border);color:white;padding:10px 13px;border-radius:9px}
+.layout{display:flex;min-height:calc(100vh - 57px)}
+.sidebar{width:245px;flex-shrink:0;padding:15px;background:#151923;border-right:1px solid var(--border)}
+.sidebar button{display:block;width:100%;text-align:left;padding:12px;margin-bottom:5px;background:transparent;color:var(--text);border:0;border-radius:8px}
+.sidebar button:hover,.sidebar button.active{background:var(--panel2);color:var(--accent)}
+main{flex:1;min-width:0;padding:24px;max-width:1500px;margin:0 auto;width:100%}
+h1{font-size:25px;margin:0 0 8px}
+h2{font-size:19px;margin:0 0 14px}
+p{line-height:1.5}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:22px 0}
+.card,.panel{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:17px;min-width:0}
+.stat{font-size:29px;font-weight:bold;margin-top:10px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.btn{border:0;border-radius:8px;padding:11px 14px;background:var(--accent);color:#09251b;font-weight:bold}
+.btn.secondary{background:var(--panel2);border:1px solid var(--border);color:var(--text)}
+.btn.danger{background:#582b34;color:#ffe3e3}
+.btn.small{padding:7px 9px;font-size:13px}
+form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field.full{grid-column:1/-1}
+label{color:#c5d0df;font-size:13px}
+input,select,textarea{width:100%;min-width:0;background:#10151e;color:var(--text);border:1px solid #394557;border-radius:8px;padding:11px}
+textarea{min-height:90px;resize:vertical}
+input[type=checkbox]{width:auto}
+.tablewrap{overflow-x:auto;margin-top:12px}
+table{width:100%;border-collapse:collapse;min-width:620px}
+th,td{padding:12px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle}
+th{font-size:12px;color:var(--muted)}
+.productimg{width:58px;height:58px;object-fit:cover;border-radius:8px;background:var(--panel2)}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:13px;margin-top:16px}
+.producttile{background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:10px;cursor:pointer;overflow:hidden}
+.producttile img{width:100%;height:130px;object-fit:cover;border-radius:7px}
+.producttile strong{display:block;margin-top:9px;overflow-wrap:anywhere}
+.producttile small{display:block;color:var(--muted);margin-top:5px}
+.notice{padding:12px;border-radius:9px;background:#3e3020;color:#ffe1a1;margin:10px 0}
+.good{color:var(--accent)}.bad{color:var(--red)}
+.hidden{display:none!important}
+hr{border:0;border-top:1px solid var(--border);margin:20px 0}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:14px;width:min(600px,94vw);max-height:90vh;overflow:auto}
+dialog::backdrop{background:#000b}
+.dialogimg{width:100%;max-height:280px;object-fit:contain}
+footer{color:var(--muted);font-size:12px;margin-top:30px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#273647;padding:13px 18px;border-radius:10px;z-index:20;max-width:90vw}
+.badge{padding:4px 7px;border-radius:6px;background:#26384a;font-size:12px}
+@media(max-width:850px){
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .sidebar{position:fixed;z-index:10;top:57px;bottom:0;left:0;width:min(285px,85vw);overflow-y:auto;box-shadow:10px 0 30px #0007}
+ .sidebar.closed{display:none}
+ main{padding:16px}
+}
+@media(max-width:480px){
+ .grid{gap:8px}.card,.panel{padding:12px}
+ .stat{font-size:23px}form{grid-template-columns:1fr}
+ .field.full{grid-column:auto}
+ h1{font-size:22px}
+}
+</style>
 </head>
-
 <body>
-
-  <!-- TELA DE LOGIN -->
-  <section id="loginScreen" class="login-screen">
-    <div class="login-card">
-      <div class="login-logo">📦</div>
-      <h1>Almoxarifado Pro</h1>
-      <p>Entre para acessar o sistema</p>
-
-      <form id="loginForm">
-        <label for="loginUser">Usuário</label>
-        <input
-          id="loginUser"
-          name="username"
-          type="text"
-          placeholder="Digite seu usuário"
-          autocomplete="username"
-          required
-        >
-
-        <label for="loginPassword">Senha</label>
-        <input
-          id="loginPassword"
-          name="password"
-          type="password"
-          placeholder="Digite sua senha"
-          autocomplete="current-password"
-          required
-        >
-
-        <button type="submit" class="btn btn-primary btn-full">
-          Entrar no sistema
-        </button>
-
-        <p id="loginMessage" class="message" role="status"></p>
-      </form>
-
-      <small>Versão local demonstrativa</small>
-    </div>
-  </section>
-
-  <!-- APLICAÇÃO PRINCIPAL -->
-  <div id="app" class="app hidden">
-
-    <!-- BARRA SUPERIOR -->
-    <header class="topbar">
-      <button
-        id="menuToggle"
-        class="icon-button"
-        type="button"
-        aria-label="Abrir menu"
-        aria-controls="sidebar"
-        aria-expanded="false"
-      >☰</button>
-
-      <div class="brand">
-        <span class="brand-icon">📦</span>
-        <div>
-          <strong id="headerCompany">Almoxarifado Pro</strong>
-          <small>Controle de estoque e produção</small>
-        </div>
-      </div>
-
-      <div class="topbar-actions">
-        <span id="currentDate" class="current-date"></span>
-        <button
-          id="logoutButton"
-          class="btn btn-outline btn-small"
-          type="button"
-        >Sair</button>
-      </div>
-    </header>
-
-    <div id="sidebarOverlay" class="sidebar-overlay"></div>
-
-    <!-- MENU HAMBÚRGUER -->
-    <aside id="sidebar" class="sidebar">
-      <div class="sidebar-heading">
-        <span>MENU PRINCIPAL</span>
-        <button id="menuClose" type="button" class="icon-button"
-          aria-label="Fechar menu">×</button>
-      </div>
-
-      <nav id="mainNavigation" class="navigation">
-        <button class="nav-item active" data-page="dashboard" type="button">
-          <span>📊</span> Painel geral
-        </button>
-
-        <button class="nav-item" data-page="estoque" type="button">
-          <span>📦</span> Estoque / Materiais
-        </button>
-
-        <button class="nav-item" data-page="movimentacoes" type="button">
-          <span>🔄</span> Entradas e saídas
-        </button>
-
-        <button class="nav-item" data-page="producao" type="button">
-          <span>🏭</span> Produção por setor
-        </button>
-
-        <button class="nav-item" data-page="equipe" type="button">
-          <span>👥</span> Equipe / Conferência
-        </button>
-
-        <button class="nav-item" data-page="anotacoes" type="button">
-          <span>📝</span> Anotações do dia
-        </button>
-
-        <button class="nav-item" data-page="relatorios" type="button">
-          <span>📈</span> Relatórios
-        </button>
-
-        <button class="nav-item" data-page="configuracoes" type="button">
-          <span>⚙️</span> Configurações
-        </button>
-      </nav>
-
-      <div class="sidebar-footer">
-        <span class="status-indicator"></span>
-        Sistema local
-        <small>Almoxarifado Pro</small>
-      </div>
-    </aside>
-
-    <!-- CONTEÚDO -->
-    <main id="mainContent" class="main-content">
-
-      <!-- PAINEL GERAL -->
-      <section id="page-dashboard" class="page active">
-        <div class="page-heading">
-          <div>
-            <h1>Painel geral</h1>
-            <p>Acompanhe as informações do almoxarifado.</p>
-          </div>
-          <button class="btn btn-primary" type="button"
-            data-action="new-material">+ Novo material</button>
-        </div>
-
-        <div class="stats-grid">
-          <article class="stat-card">
-            <span class="stat-icon">📦</span>
-            <div>
-              <p>Materiais cadastrados</p>
-              <strong id="statMaterials">0</strong>
-            </div>
-          </article>
-
-          <article class="stat-card">
-            <span class="stat-icon">⚠️</span>
-            <div>
-              <p>Estoque baixo</p>
-              <strong id="statLowStock">0</strong>
-            </div>
-          </article>
-
-          <article class="stat-card">
-            <span class="stat-icon">🔄</span>
-            <div>
-              <p>Movimentações hoje</p>
-              <strong id="statMovements">0</strong>
-            </div>
-          </article>
-
-          <article class="stat-card">
-            <span class="stat-icon">🏭</span>
-            <div>
-              <p>Ordens em andamento</p>
-              <strong id="statProduction">0</strong>
-            </div>
-          </article>
-        </div>
-
-        <div class="dashboard-grid">
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>Estoque baixo</h2>
-                <p>Materiais que precisam de atenção.</p>
-              </div>
-              <button class="btn btn-outline btn-small" type="button"
-                data-page="estoque">Ver estoque</button>
-            </div>
-
-            <div class="table-responsive">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Material</th>
-                    <th>Quantidade</th>
-                    <th>Mínimo</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody id="dashboardLowStock">
-                  <tr><td colspan="4">Nenhum material para exibir.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>Ações rápidas</h2>
-                <p>Acesse as funções mais utilizadas.</p>
-              </div>
-            </div>
-
-            <div class="quick-actions">
-              <button type="button" class="quick-action"
-                data-action="new-material">
-                <span>➕</span> Cadastrar material
-              </button>
-
-              <button type="button" class="quick-action"
-                data-action="new-movement">
-                <span>🔄</span> Registrar movimentação
-              </button>
-
-              <button type="button" class="quick-action"
-                data-action="new-production">
-                <span>🏭</span> Nova ordem de produção
-              </button>
-
-              <button type="button" class="quick-action"
-                data-action="new-note">
-                <span>📝</span> Nova anotação
-              </button>
-            </div>
-          </article>
-        </div>
-
-        <article class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2>Últimas movimentações</h2>
-              <p>Entradas e saídas recentes de materiais.</p>
-            </div>
-            <button class="btn btn-outline btn-small" type="button"
-              data-page="movimentacoes">Ver histórico</button>
-          </div>
-
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Material</th>
-                  <th>Tipo</th>
-                  <th>Quantidade</th>
-                  <th>Responsável</th>
-                </tr>
-              </thead>
-              <tbody id="dashboardMovements">
-                <tr><td colspan="5">Nenhuma movimentação registrada.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-
-      <!-- ESTOQUE -->
-      <section id="page-estoque" class="page">
-        <div class="page-heading">
-          <div>
-            <h1>Estoque / Materiais</h1>
-            <p>Cadastre, consulte e controle os materiais.</p>
-          </div>
-          <button type="button" class="btn btn-primary"
-            data-action="new-material">+ Cadastrar material</button>
-        </div>
-
-        <article class="panel">
-          <div class="filters">
-            <div class="filter-search">
-              <label for="inventorySearch">Pesquisar material</label>
-              <input id="inventorySearch" type="search"
-                placeholder="Nome, código ou localização...">
-            </div>
-
-            <div>
-              <label for="inventoryCategory">Categoria</label>
-              <select id="inventoryCategory">
-                <option value="">Todas as categorias</option>
-                <option value="Ferramentas">Ferramentas</option>
-                <option value="EPI">EPI</option>
-                <option value="Limpeza">Limpeza</option>
-                <option value="Elétricos">Elétricos</option>
-                <option value="Produção">Produção</option>
-                <option value="Escritório">Escritório</option>
-                <option value="Outros">Outros</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="inventoryStatus">Situação</label>
-              <select id="inventoryStatus">
-                <option value="">Todas</option>
-                <option value="normal">Estoque normal</option>
-                <option value="baixo">Estoque baixo</option>
-                <option value="zerado">Sem estoque</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Foto</th>
-                  <th>Código</th>
-                  <th>Material</th>
-                  <th>Categoria</th>
-                  <th>Quantidade</th>
-                  <th>Mínimo</th>
-                  <th>Localização</th>
-                  <th>Situação</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="inventoryTable">
-                <tr><td colspan="9">Carregando materiais...</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div id="inventoryEmpty" class="empty-state hidden">
-            <span>📦</span>
-            <h3>Nenhum material encontrado</h3>
-            <p>Cadastre um material ou altere a pesquisa.</p>
-          </div>
-        </article>
-      </section>
-
-      <!-- ENTRADAS E SAÍDAS -->
-      <section id="page-movimentacoes" class="page">
-        <div class="page-heading">
-          <div>
-            <h1>Entradas e saídas</h1>
-            <p>Registre cada movimentação para manter o saldo atualizado.</p>
-          </div>
-          <button type="button" class="btn btn-primary"
-            data-action="new-movement">+ Nova movimentação</button>
-        </div>
-
-        <article class="panel">
-          <div class="filters">
-            <div class="filter-search">
-              <label for="movementSearch">Pesquisar</label>
-              <input id="movementSearch" type="search"
-                placeholder="Material ou responsável...">
-            </div>
-
-            <div>
-              <label for="movementTypeFilter">Tipo</label>
-              <select id="movementTypeFilter">
-                <option value="">Todos</option>
-                <option value="entrada">Entradas</option>
-                <option value="saida">Saídas</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="movementDateFilter">Data</label>
-              <input id="movementDateFilter" type="date">
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Data e hora</th>
-                  <th>Material</th>
-                  <th>Tipo</th>
-                  <th>Quantidade</th>
-                  <th>Responsável</th>
-                  <th>Destino / Origem</th>
-                  <th>Observações</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="movementsTable">
-                <tr><td colspan="8">Nenhuma movimentação registrada.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-
-      <!-- PRODUÇÃO -->
-      <section id="page-producao" class="page">
-        <div class="page-heading">
-          <div>
-            <h1>Produção por setor</h1>
-            <p>Acompanhe solicitações, responsáveis e prazos.</p>
-          </div>
-          <button type="button" class="btn btn-primary"
-            data-action="new-production">+ Nova ordem</button>
-        </div>
-
-        <div class="stats-grid production-stats">
-          <article class="stat-card">
-            <span class="stat-icon">📋</span>
-            <div><p>Total de ordens</p><strong id="productionTotal">0</strong></div>
-          </article>
-          <article class="stat-card">
-            <span class="stat-icon">⏳</span>
-            <div><p>Em andamento</p><strong id="productionRunning">0</strong></div>
-          </article>
-          <article class="stat-card">
-            <span class="stat-icon">⚠️</span>
-            <div><p>Atrasadas</p><strong id="productionLate">0</strong></div>
-          </article>
-          <article class="stat-card">
-            <span class="stat-icon">✅</span>
-            <div><p>Concluídas</p><strong id="productionCompleted">0</strong></div>
-          </article>
-        </div>
-
-        <article class="panel">
-          <div class="filters">
-            <div>
-              <label for="productionSectorFilter">Setor</label>
-              <select id="productionSectorFilter">
-                <option value="">Todos os setores</option>
-                <option value="Palmilha">Palmilha</option>
-                <option value="Corte">Corte</option>
-                <option value="Costura">Costura</option>
-                <option value="Acabamento">Acabamento</option>
-                <option value="Inspeção">Inspeção</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="productionStatusFilter">Status</label>
-              <select id="productionStatusFilter">
-                <option value="">Todos</option>
-                <option value="pendente">Pendente</option>
-                <option value="andamento">Em andamento</option>
-                <option value="concluida">Concluída</option>
-              </select>
-            </div>
-
-            <div class="filter-search">
-              <label for="productionSearch">Pesquisar ordem</label>
-              <input id="productionSearch" type="search"
-                placeholder="Descrição ou responsável...">
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Ordem</th>
-                  <th>Setor</th>
-                  <th>Descrição</th>
-                  <th>Quantidade</th>
-                  <th>Responsável</th>
-                  <th>Início</th>
-                  <th>Prazo</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="productionTable">
-                <tr><td colspan="9">Nenhuma ordem cadastrada.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-
-      <!-- EQUIPE -->
-      <section id="page-equipe" class="page">
-        <div class="page-heading">
-          <div>
-            <h1>Equipe / Conferência</h1>
-            <p>Cadastre colaboradores e registre as conferências diárias.</p>
-          </div>
-          <button type="button" class="btn btn-primary"
-            data-action="new-employee">+ Cadastrar colaborador</button>
-        </div>
-
-        <article class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2>Conferência diária</h2>
-              <p>Marque OK para registrar a conferência do colaborador.</p>
-            </div>
-            <div>
-              <label for="attendanceDate">Data da conferência</label>
-              <input id="attendanceDate" type="date">
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Colaborador</th>
-                  <th>Setor</th>
-                  <th>Função</th>
-                  <th>Conferência</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="teamTable">
-                <tr><td colspan="5">Nenhum colaborador cadastrado.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        <article class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2>Histórico de conferências</h2>
-              <p>Consulte os registros realizados.</p>
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Colaborador</th>
-                  <th>Setor</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="attendanceHistory">
-                <tr><td colspan="4">Nenhuma conferência registrada.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-
-      <!-- ANOTAÇÕES -->
-      <section id="page-anotacoes" class="page">
-        <div class="page-heading">
-          <div>
-            <h1>Anotações do dia</h1>
-            <p>Registre recados, necessidades e informações importantes.</p>
-          </div>
-          <button type="button" class="btn btn-primary"
-            data-action="new-note">+ Nova anotação</button>
-        </div>
-
-        <article class="panel">
-          <form id="noteForm" class="form-grid">
-            <div>
-              <label for="noteDate">Data</label>
-              <input id="noteDate" name="date" type="date" required>
-            </div>
-
-            <div>
-              <label for="noteResponsible">Responsável</label>
-              <input id="noteResponsible" name="responsible" type="text"
-                placeholder="Nome do responsável">
-            </div>
-
-            <div>
-              <label for="noteCategory">Categoria</label>
-              <select id="noteCategory" name="category">
-                <option value="Geral">Geral</option>
-                <option value="Estoque">Estoque</option>
-                <option value="Produção">Produção</option>
-                <option value="Compras">Compras</option>
-                <option value="Manutenção">Manutenção</option>
-                <option value="Urgente">Urgente</option>
-              </select>
-            </div>
-
-            <div class="form-span">
-              <label for="noteTitle">Título</label>
-              <input id="noteTitle" name="title" type="text"
-                placeholder="Ex.: Repor fita isolante" required>
-            </div>
-
-            <div class="form-span">
-              <label for="noteText">Anotação</label>
-              <textarea id="noteText" name="text" rows="4"
-                placeholder="Escreva os detalhes aqui..." required></textarea>
-            </div>
-
-            <div class="form-actions form-span">
-              <button class="btn btn-primary" type="submit">
-                Salvar anotação
-              </button>
-              <button class="btn btn-outline" type="reset">
-                Limpar formulário
-              </button>
-            </div>
-          </form>
-        </article>
-
-        <article class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2>Histórico de anotações</h2>
-              <p>Pesquise registros anteriores.</p>
-            </div>
-          </div>
-
-          <div class="filters">
-            <div class="filter-search">
-              <label for="notesSearch">Pesquisar anotação</label>
-              <input id="notesSearch" type="search"
-                placeholder="Título, conteúdo ou responsável...">
-            </div>
-            <div>
-              <label for="notesDateFilter">Filtrar por data</label>
-              <input id="notesDateFilter" type="date">
-            </div>
-          </div>
-
-          <div id="notesList" class="notes-list">
-            <p class="empty-message">Nenhuma anotação cadastrada.</p>
-          </div>
-        </article>
-      </section>
-
-      <!-- RELATÓRIOS -->
-      <section id="page-relatorios" class="page">
-        <div class="page-heading">
-          <div>
-            <h1>Relatórios</h1>
-            <p>Consulte os dados e exporte os registros do sistema.</p>
-          </div>
-        </div>
-
-        <div class="stats-grid">
-          <article class="stat-card">
-            <span class="stat-icon">📦</span>
-            <div><p>Itens cadastrados</p><strong id="reportItemCount">0</strong></div>
-          </article>
-          <article class="stat-card">
-            <span class="stat-icon">💰</span>
-            <div><p>Valor estimado do estoque</p><strong id="reportStockValue">R$ 0,00</strong></div>
-          </article>
-          <article class="stat-card">
-            <span class="stat-icon">📥</span>
-            <div><p>Total de entradas</p><strong id="reportEntries">0</strong></div>
-          </article>
-          <article class="stat-card">
-            <span class="stat-icon">📤</span>
-            <div><p>Total de saídas</p><strong id="reportExits">0</strong></div>
-          </article>
-        </div>
-
-        <article class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2>Exportar dados</h2>
-              <p>Baixe os registros para guardar ou analisar em uma planilha.</p>
-            </div>
-          </div>
-
-          <div class="export-grid">
-            <div class="export-card">
-              <span>📦</span>
-              <h3>Relatório de estoque</h3>
-              <p>Lista de materiais, quantidades e localização.</p>
-              <button type="button" class="btn btn-primary"
-                data-export="estoque">Exportar CSV</button>
-            </div>
-
-            <div class="export-card">
-              <span>🔄</span>
-              <h3>Movimentações</h3>
-              <p>Histórico de entradas e saídas.</p>
-              <button type="button" class="btn btn-primary"
-                data-export="movimentacoes">Exportar CSV</button>
-            </div>
-
-            <div class="export-card">
-              <span>🏭</span>
-              <h3>Produção</h3>
-              <p>Ordens, setores, prazos e status.</p>
-              <button type="button" class="btn btn-primary"
-                data-export="producao">Exportar CSV</button>
-            </div>
-
-            <div class="export-card">
-              <span>👥</span>
-              <h3>Equipe</h3>
-              <p>Colaboradores e registros de conferência.</p>
-              <button type="button" class="btn btn-primary"
-                data-export="equipe">Exportar CSV</button>
-            </div>
-
-            <div class="export-card">
-              <span>📝</span>
-              <h3>Anotações</h3>
-              <p>Histórico de anotações do almoxarifado.</p>
-              <button type="button" class="btn btn-primary"
-                data-export="anotacoes">Exportar CSV</button>
-            </div>
-          </div>
-        </article>
-
-        <article class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2>Backup completo</h2>
-              <p>Salve os dados em JSON ou restaure um backup anterior.</p>
-            </div>
-          </div>
-
-          <div class="backup-actions">
-            <button id="backupExport" type="button" class="btn btn-primary">
-              Baixar backup completo
-            </button>
-
-            <label class="btn btn-outline file-button" for="backupImport">
-              Restaurar backup
-            </label>
-            <input id="backupImport" type="file" accept=".json,application/json"
-              class="hidden">
-          </div>
-
-          <p class="help-text">
-            A restauração substitui os dados locais atuais. Faça um backup
-            antes de importar outro arquivo.
-          </p>
-        </article>
-      </section>
-
-      <!-- CONFIGURAÇÕES -->
-      <section id="page-configuracoes" class="page">
-        <div class="page-heading">
-          <div>
-            <h1>Configurações</h1>
-            <p>Personalize as informações do almoxarifado.</p>
-          </div>
-        </div>
-
-        <article class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2>Dados da empresa</h2>
-              <p>Informações que aparecem no cabeçalho do sistema.</p>
-            </div>
-          </div>
-
-          <form id="settingsForm" class="form-grid">
-            <div class="form-span">
-              <label for="companyName">Nome da empresa ou almoxarifado</label>
-              <input id="companyName" name="companyName" type="text"
-                placeholder="Ex.: Almoxarifado Central">
-            </div>
-
-            <div>
-              <label for="defaultStockMinimum">Estoque mínimo padrão</label>
-              <input id="defaultStockMinimum" name="defaultStockMinimum"
-                type="number" min="0" step="any" value="5">
-            </div>
-
-            <div>
-              <label for="systemLanguage">Idioma</label>
-              <select id="systemLanguage" name="language">
-                <option value="pt-BR">Português (Brasil)</option>
-                <option value="en">English</option>
-                <option value="es">Español</option>
-              </select>
-              <small class="help-text">
-                A seleção do idioma será aplicada conforme o suporte
-                de tradução implementado no JavaScript.
-              </small>
-            </div>
-
-            <div class="form-span">
-              <label for="settingsNotes">Observações gerais</label>
-              <textarea id="settingsNotes" name="notes" rows="3"
-                placeholder="Informações adicionais..."></textarea>
-            </div>
-
-            <div class="form-actions form-span">
-              <button type="submit" class="btn btn-primary">
-                Salvar configurações
-              </button>
-            </div>
-          </form>
-        </article>
-
-        <article class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2>Dados e privacidade</h2>
-              <p>Entenda onde as informações estão armazenadas.</p>
-            </div>
-          </div>
-
-          <div class="notice notice-warning">
-            <strong>Armazenamento local</strong>
-            <p>
-              Esta versão salva informações no navegador deste dispositivo.
-              Limpar os dados do navegador pode apagar os registros.
-              Para compartilhar dados entre computadores e ter autenticação
-              segura, será necessário configurar um backend e banco de dados.
-            </p>
-          </div>
-
-          <button id="clearLocalData" type="button" class="btn btn-danger">
-            Apagar dados locais
-          </button>
-        </article>
-      </section>
-
-      <footer class="app-footer">
-        <span>Almoxarifado Pro</span>
-        <span>Controle de estoque e produção</span>
-      </footer>
-    </main>
-  </div>
-
-  <!-- MODAL REUTILIZÁVEL -->
-  <div id="modalOverlay" class="modal-overlay hidden"
-    role="presentation">
-    <section
-      id="modalContent"
-      class="modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modalTitle"
-    >
-      <div class="modal-heading">
-        <h2 id="modalTitle">Cadastro</h2>
-        <button id="modalClose" type="button" class="icon-button"
-          aria-label="Fechar janela">×</button>
-      </div>
-
-      <div id="modalBody" class="modal-body">
-        <!-- Os formulários serão inseridos pelo script.js -->
-      </div>
-    </section>
-  </div>
-
-  <!-- NOTIFICAÇÕES -->
-  <div id="toastContainer" class="toast-container"
-    aria-live="polite" aria-atomic="true"></div>
-
-  <!-- ARQUIVO JAVASCRIPT -->
-  <script src="script.js"></script>
+<header class="top">
+<button class="iconbtn" id="menuBtn" aria-label="Abrir menu">☰</button>
+<div class="brand" id="brand">Sistema de Gestão</div>
+<button class="iconbtn" id="settingsBtn" title="Configurações">⚙</button>
+</header>
+
+<div class="layout">
+<aside class="sidebar closed" id="sidebar">
+<button data-page="home">⌂ Início</button>
+<button data-page="products">▦ Produtos</button>
+<button data-page="register">＋ Cadastrar produto</button>
+<button data-page="notes">▤ Anotações do dia</button>
+<button data-page="suppliers">♧ Fornecedores / Contatos</button>
+<button data-page="alerts">⚠ Estoque baixo</button>
+<button data-page="history">↔ Histórico</button>
+<button data-page="users">♙ Usuários</button>
+<button data-page="settings">⚙ Configurações</button>
+<button data-page="backup">⇩ Backup de dados</button>
+<button id="logoutBtn">↪ Sair</button>
+</aside>
+
+<main>
+<section id="loginScreen" class="panel">
+<h1>Entrar no sistema</h1>
+<p class="muted">Acesso demonstrativo neste dispositivo.</p>
+<form id="loginForm">
+<div class="field full"><label for="loginUser">Usuário</label><input id="loginUser" required autocomplete="username" value="admin"></div>
+<div class="field full"><label for="loginPass">Senha</label><input id="loginPass" type="password" required autocomplete="current-password" placeholder="Senha local" value="1234"></div>
+<div class="field full"><button class="btn">Entrar</button></div>
+</form>
+<p class="muted">Primeiro acesso: admin / 1234. Troque a senha de demonstração antes de usar o sistema. Este login local não protege dados na internet.</p>
+</section>
+
+<section id="setupScreen" class="panel hidden">
+<h1>Configure seu sistema</h1>
+<p>Para que o sistema será usado?</p>
+<form id="setupForm">
+<div class="field full"><label for="systemType">Tipo de sistema</label>
+<select id="systemType">
+<option>Sistema de almoxarifado</option>
+<option>Sistema de controle de estoque</option>
+<option>Sistema de gestão de loja</option>
+<option>Sistema de gestão de produção</option>
+</select></div>
+<div class="field full"><label for="companyName">Nome da empresa (opcional)</label><input id="companyName" placeholder="Nome da empresa"></div>
+<div class="field full"><button class="btn">Salvar configuração</button></div>
+</form>
+</section>
+
+<div id="app" class="hidden">
+<section id="page-home" class="page">
+<h1 id="welcome">Painel de controle</h1>
+<p class="muted">Resumo do estoque e das movimentações.</p>
+<div id="homeAlerts"></div>
+<div class="grid">
+<div class="card"><span class="muted">Produtos cadastrados</span><div class="stat" id="statProducts">0</div></div>
+<div class="card"><span class="muted">Unidades em estoque</span><div class="stat" id="statUnits">0</div></div>
+<div class="card"><span class="muted">Estoque baixo</span><div class="stat" id="statLow">0</div></div>
+<div class="card"><span class="muted">Movimentações hoje</span><div class="stat" id="statToday">0</div></div>
+</div>
+<div class="panel">
+<h2>Acesso rápido</h2>
+<div class="actions">
+<button class="btn" data-go="register">Cadastrar produto</button>
+<button class="btn secondary" data-go="notes">Registrar movimentação</button>
+<button class="btn secondary" data-go="products">Ver produtos</button>
+<button class="btn secondary" data-go="alerts">Ver alertas</button>
+</div>
+</div>
+<div class="panel" style="margin-top:15px">
+<h2>Movimentações recentes</h2><div id="recentMoves"></div>
+</div>
+</section>
+
+<section id="page-products" class="page hidden">
+<h1>Produtos</h1><p class="muted">Clique em um produto para ver seus detalhes.</p>
+<div class="field"><label for="productSearch">Pesquisar produto</label><input id="productSearch" placeholder="Nome, código ou descrição"></div>
+<div id="productGallery" class="gallery"></div>
+<div id="emptyProducts" class="muted">Nenhum produto cadastrado.</div>
+</section>
+
+<section id="page-register" class="page hidden">
+<h1 id="registerTitle">Cadastrar produto</h1>
+<div class="panel">
+<form id="productForm">
+<input id="editId" type="hidden">
+<div class="field full"><label for="pName">Nome do produto *</label><input id="pName" required placeholder="Ex.: Fita isolante"></div>
+<div class="field"><label for="pCode">Código / referência</label><input id="pCode" placeholder="Opcional"></div>
+<div class="field"><label for="pCategory">Categoria</label><input id="pCategory" placeholder="Ex.: Ferramentas"></div>
+<div class="field full"><label for="pDesc">Descrição</label><textarea id="pDesc" placeholder="Detalhes do produto"></textarea></div>
+<div class="field"><label for="pExpected">Número de produtos (sistema)</label><input id="pExpected" type="number" min="0" step="1" value="0" required></div>
+<div class="field"><label for="pActual">Contagem real / quantidade atual</label><input id="pActual" type="number" min="0" step="1" value="0" required></div>
+<div class="field"><label for="pMin">Limite para estoque baixo</label><input id="pMin" type="number" min="0" step="1" value="2" required></div>
+<div class="field"><label for="pSupplier">Fornecedor</label><input id="pSupplier" placeholder="Nome do fornecedor"></div>
+<div class="field"><label for="pPhone">Telefone / WhatsApp</label><input id="pPhone" placeholder="DDD + número"></div>
+<div class="field full"><label for="pPhoto">Foto do produto</label><input id="pPhoto" type="file" accept="image/*" capture="environment"><small class="muted">Em celulares compatíveis, você pode tirar uma foto pela câmera.</small></div>
+<div class="field full"><img id="photoPreview" class="productimg hidden" alt="Prévia da foto"><span id="photoStatus" class="muted"></span></div>
+<div class="field full actions"><button class="btn" id="saveProductBtn">Salvar produto</button><button class="btn secondary" type="button" id="cancelEditBtn">Limpar formulário</button></div>
+</form>
+</div>
+</section>
+
+<section id="page-notes" class="page hidden">
+<h1>Anotações do dia</h1>
+<p class="muted">Registre retiradas, devoluções e entradas. A quantidade do produto será atualizada automaticamente.</p>
+<div class="panel">
+<form id="moveForm">
+<div class="field full"><label for="moveProduct">Produto</label><select id="moveProduct" required></select></div>
+<div class="field"><label for="moveType">Operação</label><select id="moveType"><option value="saida">Saída / retirada (−)</option><option value="entrada">Entrada / devolução (+)</option><option value="ajuste">Ajustar quantidade real</option></select></div>
+<div class="field"><label for="moveQty">Quantidade</label><input id="moveQty" type="number" min="0" step="1" value="1" required></div>
+<div class="field full"><label for="moveNote">Anotação / motivo</label><input id="moveNote" placeholder="Ex.: Material retirado para manutenção"></div>
+<div class="field full"><button class="btn">Confirmar movimentação</button></div>
+</form>
+</div>
+<div class="panel" style="margin-top:15px"><h2>Registros do dia</h2><div id="todayMoves"></div></div>
+</section>
+
+<section id="page-suppliers" class="page hidden">
+<h1>Fornecedores e contatos</h1>
+<div class="panel">
+<form id="supplierForm">
+<div class="field"><label for="sName">Nome</label><input id="sName" required></div>
+<div class="field"><label for="sPhone">Telefone</label><input id="sPhone" placeholder="DDD + número"></div>
+<div class="field full"><label for="sEmail">E-mail</label><input id="sEmail" type="email"></div>
+<div class="field full"><label for="sNote">Observações</label><input id="sNote"></div>
+<div class="field full"><button class="btn">Adicionar contato</button></div>
+</form>
+</div>
+<div class="panel" style="margin-top:15px"><h2>Contatos cadastrados</h2><div id="supplierList"></div></div>
+</section>
+
+<section id="page-alerts" class="page hidden">
+<h1>Alertas de estoque baixo</h1>
+<p class="muted">Produtos cuja quantidade atual é menor ou igual ao limite configurado.</p>
+<div id="alertList"></div>
+</section>
+
+<section id="page-history" class="page hidden">
+<h1>Histórico de movimentações</h1>
+<div class="field"><label for="historySearch">Pesquisar</label><input id="historySearch" placeholder="Produto, operação ou motivo"></div>
+<div id="historyList" class="tablewrap"></div>
+</section>
+
+<section id="page-users" class="page hidden">
+<h1>Usuários locais</h1>
+<div class="notice">Demonstração: os usuários ficam apenas neste navegador. Não existe autenticação segura nem separação de dados entre usuários no servidor.</div>
+<div class="panel">
+<form id="userForm">
+<div class="field"><label for="newUsername">Novo usuário</label><input id="newUsername" required autocomplete="off"></div>
+<div class="field"><label for="newPassword">Senha</label><input id="newPassword" type="password" minlength="4" required autocomplete="new-password"></div>
+<div class="field full"><button class="btn">Cadastrar usuário local</button></div>
+</form>
+</div>
+<div id="userList" style="margin-top:15px"></div>
+</section>
+
+<section id="page-settings" class="page hidden">
+<h1>Configurações</h1>
+<div class="panel">
+<form id="settingsForm">
+<div class="field full"><label for="cfgTitle">Título do sistema</label><select id="cfgTitle">
+<option>Sistema de almoxarifado</option><option>Sistema de controle de estoque</option><option>Sistema de gestão de loja</option><option>Sistema de gestão de produção</option>
+</select></div>
+<div class="field full"><label for="cfgCompany">Empresa</label><input id="cfgCompany"></div>
+<div class="field full"><label for="cfgLang">Idioma</label><select id="cfgLang"><option value="pt-BR">Português (Brasil)</option><option value="en">English (basic)</option><option value="es">Español (básico)</option></select></div>
+<div class="field full"><button class="btn">Salvar configurações</button></div>
+</form>
+<hr>
+<h2>Alterar senha local</h2>
+<form id="passwordForm">
+<div class="field full"><label for="oldPassword">Senha atual</label><input id="oldPassword" type="password" required></div>
+<div class="field full"><label for="newAdminPassword">Nova senha</label><input id="newAdminPassword" type="password" minlength="4" required></div>
+<div class="field full"><button class="btn">Alterar senha</button></div>
+</form>
+</div>
+</section>
+
+<section id="page-backup" class="page hidden">
+<h1>Backup e restauração</h1>
+<div class="notice">O backup contém informações do estoque e dos contatos. Guarde o arquivo em local privado.</div>
+<div class="panel">
+<p>Exporte os dados para guardar uma cópia ou transferi-los para outro navegador.</p>
+<div class="actions"><button class="btn" id="exportBtn">Exportar backup JSON</button></div>
+<hr>
+<label for="importFile">Restaurar backup JSON</label><input id="importFile" type="file" accept=".json,application/json">
+<div class="actions"><button class="btn secondary" id="importBtn">Importar backup</button></div>
+<hr>
+<button class="btn danger" id="clearDataBtn">Apagar todos os dados locais</button>
+</div>
+</section>
+<footer>Versão local demonstrativa • Faça backups regularmente.</footer>
+</div>
+</main>
+</div>
+
+<dialog id="productDialog">
+<div id="productDetails"></div>
+<div class="actions"><button class="btn secondary" id="closeDialog">Fechar</button></div>
+</dialog>
+<div id="toast" class="hidden" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const DBKEY="almoxarifado_pro_v1";
+const today=()=>new Date().toLocaleDateString("en-CA");
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const initial=()=>({
+configured:false,title:"Sistema de almoxarifado",company:"",
+products:[],moves:[],suppliers:[],
+users:[{username:"admin",password:"1234"}],currentUser:null,language:"pt-BR"
+});
+let db=loadDB(),photoData="",pendingImport=null;
+
+function loadDB(){
+ try{
+  const raw=localStorage.getItem(DBKEY);
+  if(raw){const parsed=JSON.parse(raw);return {...initial(),...parsed};}
+ }catch(e){console.warn("Não foi possível ler os dados locais",e);}
+ return initial();
+}
+function saveDB(){
+ try{localStorage.setItem(DBKEY,JSON.stringify(db));}
+ catch(e){toast("Armazenamento cheio. Exporte um backup e reduza o tamanho das fotos.");}
+}
+function esc(v=""){
+ return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function toast(msg){
+ $("toast").textContent=msg;$("toast").classList.remove("hidden");
+ clearTimeout(toast.timer);toast.timer=setTimeout(()=>$("toast").classList.add("hidden"),2800);
+}
+function fmtDate(d){return new Date(d).toLocaleString("pt-BR");}
+function product(id){return db.products.find(p=>p.id===id);}
+function movesToday(){return db.moves.filter(m=>m.date.slice(0,10)===today());}
+function lowProducts(){return db.products.filter(p=>p.actual<=p.min);}
+function go(page){
+ document.querySelectorAll(".page").forEach(el=>el.classList.add("hidden"));
+ const section=$("page-"+page);if(section)section.classList.remove("hidden");
+ document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+ $("sidebar").classList.add("closed");
+ render();
+}
+function updateAccess(){
+ const logged=!!db.currentUser;
+ $("loginScreen").classList.toggle("hidden",logged||db.configured===false);
+ $("setupScreen").classList.toggle("hidden",!logged||db.configured);
+ $("app").classList.toggle("hidden",!logged||!db.configured);
+ $("logoutBtn").classList.toggle("hidden",!logged);
+ if(logged&&!db.configured){
+  $("systemType").value=db.title;$("companyName").value=db.company;
+ }
+ if(logged&&db.configured){
+  $("brand").textContent=db.company?db.title+" · "+db.company:db.title;
+  $("welcome").textContent="Painel de controle";
+  $("cfgTitle").value=db.title;$("cfgCompany").value=db.company;$("cfgLang").value=db.language;
+ }
+}
+function render(){
+ if(!db.currentUser||!db.configured)return;
+ $("statProducts").textContent=db.products.length;
+ $("statUnits").textContent=db.products.reduce((s,p)=>s+Number(p.actual||0),0);
+ $("statLow").textContent=lowProducts().length;
+ $("statToday").textContent=movesToday().length;
+ $("homeAlerts").innerHTML=lowProducts().length?
+ `<div class="notice">⚠ ${lowProducts().length} produto(s) com estoque baixo. <button class="btn small" data-go="alerts">Ver alertas</button></div>`:
+ `<p class="good">✓ Nenhum alerta de estoque baixo.</p>`;
+ $("recentMoves").innerHTML=moveTable(db.moves.slice(0,6));
+ $("todayMoves").innerHTML=moveTable(movesToday());
+ renderProducts();renderSuppliers();renderAlerts();renderHistory();renderUsers();updateMoveSelect();
+}
+function moveTable(list){
+ if(!list.length)return '<p class="muted">Nenhuma movimentação registrada.</p>';
+ return `<div class="tablewrap"><table><thead><tr><th>Data</th><th>Produto</th><th>Operação</th><th>Qtd.</th><th>Motivo</th></tr></thead><tbody>${
+ list.map(m=>`<tr><td>${esc(fmtDate(m.date))}</td><td>${esc(m.name)}</td><td>${esc(m.type)}</td><td>${m.qty}</td><td>${esc(m.note||"—")}</td></tr>`).join("")
+ }</tbody></table></div>`;
+}
+function renderProducts(){
+ const q=$("productSearch").value.trim().toLowerCase();
+ const list=db.products.filter(p=>(p.name+" "+p.code+" "+p.desc).toLowerCase().includes(q));
+ $("emptyProducts").classList.toggle("hidden",list.length>0);
+ $("productGallery").innerHTML=list.map(p=>`
+ <article class="producttile" data-detail="${p.id}" tabindex="0" role="button" aria-label="Ver ${esc(p.name)}">
+ <img src="${p.photo||placeholder()}" alt="${esc(p.name)}">
+ <strong>${esc(p.name)}</strong>
+ <small>Estoque: ${p.actual} un.</small>
+ ${p.actual<=p.min?'<small class="bad">⚠ Estoque baixo</small>':'<small class="good">Disponível</small>'}
+ </article>`).join("");
+}
+function placeholder(){
+ return "data:image/svg+xml;charset=UTF-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="130"><rect width="100%" height="100%" fill="#222a38"/><text x="50%" y="50%" fill="#9ba8ba" text-anchor="middle" dominant-baseline="middle" font-size="14">Sem foto</text></svg>');
+}
+function renderSuppliers(){
+ $("supplierList").innerHTML=db.suppliers.length?db.suppliers.map(s=>`
+ <div class="card" style="margin-top:10px"><strong>${esc(s.name)}</strong>
+ <p>${esc(s.phone||"Sem telefone")} · ${esc(s.email||"Sem e-mail")}</p>
+ <p class="muted">${esc(s.note||"")}</p>
+ <div class="actions">${s.phone?`<button class="btn small" data-whatsapp="${esc(s.phone)}">Abrir WhatsApp</button>`:""}
+ <button class="btn danger small" data-delete-supplier="${s.id}">Excluir</button></div></div>`).join(""):'<p class="muted">Nenhum contato cadastrado.</p>';
+}
+function renderAlerts(){
+ const list=lowProducts();
+ $("alertList").innerHTML=list.length?list.map(p=>`
+ <div class="card" style="margin-top:10px"><strong>${esc(p.name)}</strong>
+ <p>Quantidade atual: <b class="bad">${p.actual}</b> · Limite: ${p.min}</p>
+ <p>Fornecedor: ${esc(p.supplier||"Não informado")} · ${esc(p.phone||"Sem telefone")}</p>
+ <div class="actions"><button class="btn secondary small" data-edit="${p.id}">Editar produto</button>
+ <button class="btn small" data-reorder="${p.id}">Registrar pedido</button>
+ ${p.phone?`<button class="btn secondary small" data-whatsapp="${esc(p.phone)}">Mensagem ao fornecedor</button>`:""}</div></div>`).join(""):'<p class="good">Nenhum produto abaixo do limite configurado.</p>';
+}
+function renderHistory(){
+ const q=$("historySearch").value.toLowerCase();
+ $("historyList").innerHTML=moveTable(db.moves.filter(m=>(m.name+" "+m.type+" "+m.note).toLowerCase().includes(q)));
+}
+function renderUsers(){
+ $("userList").innerHTML=db.users.map(u=>`<div class="card" style="margin-top:8px">${esc(u.username)} ${u.username===db.currentUser?'<span class="badge">Atual</span>':""}
+ ${u.username!=="admin"?`<button class="btn danger small" data-delete-user="${esc(u.username)}">Excluir</button>`:""}</div>`).join("");
+}
+function updateMoveSelect(){
+ const old=$("moveProduct").value;
+ $("moveProduct").innerHTML='<option value="">Selecione um produto</option>'+db.products.map(p=>`<option value="${p.id}">${esc(p.name)} — estoque ${p.actual}</option>`).join("");
+ if(product(old))$("moveProduct").value=old;
+}
+function resetProductForm(){
+ $("productForm").reset();$("editId").value="";$("pExpected").value=0;$("pActual").value=0;$("pMin").value=2;
+ photoData="";$("photoPreview").classList.add("hidden");$("photoStatus").textContent="";
+ $("registerTitle").textContent="Cadastrar produto";$("saveProductBtn").textContent="Salvar produto";
+}
+function editProduct(id){
+ const p=product(id);if(!p)return;
+ go("register");
+ $("editId").value=p.id;$("pName").value=p.name;$("pCode").value=p.code||"";
+ $("pCategory").value=p.category||"";$("pDesc").value=p.desc||"";
+ $("pExpected").value=p.expected;$("pActual").value=p.actual;$("pMin").value=p.min;
+ $("pSupplier").value=p.supplier||"";$("pPhone").value=p.phone||"";
+ photoData=p.photo||"";
+ if(photoData){$("photoPreview").src=photoData;$("photoPreview").classList.remove("hidden");}
+ $("registerTitle").textContent="Editar produto";$("saveProductBtn").textContent="Salvar alterações";
+}
+function detailProduct(id){
+ const p=product(id);if(!p)return;
+ $("productDetails").innerHTML=`
+ <h2>${esc(p.name)}</h2><img class="dialogimg" src="${p.photo||placeholder()}" alt="${esc(p.name)}">
+ <p>${esc(p.desc||"Sem descrição.")}</p>
+ <p>Código: ${esc(p.code||"—")} · Categoria: ${esc(p.category||"—")}</p>
+ <p>Quantidade no sistema: ${p.expected} · Contagem real: <b>${p.actual}</b></p>
+ <p>Limite de alerta: ${p.min}</p>
+ <p>Fornecedor: ${esc(p.supplier||"—")} · ${esc(p.phone||"—")}</p>
+ ${p.actual<=p.min?'<div class="notice">Estoque baixo!</div>':""}
+ <div class="actions"><button class="btn" data-edit="${p.id}">Editar</button>
+ <button class="btn secondary" data-move="${p.id}">Movimentar estoque</button>
+ <button class="btn danger" data-delete-product="${p.id}">Excluir produto</button></div>`;
+ $("productDialog").showModal();
+}
+function recordMove(p,type,qty,note){
+ if(!p)return false;
+ qty=Number(qty);
+ if(!Number.isInteger(qty)||qty<0){toast("Informe uma quantidade inteira válida.");return false;}
+ const before=Number(p.actual);
+ if(type==="saida"&&qty>before){toast("Estoque insuficiente para essa retirada.");return false;}
+ if(type==="saida")p.actual-=qty;
+ else if(type==="entrada")p.actual+=qty;
+ else if(type==="ajuste")p.actual=qty;
+ else return false;
+ db.moves.unshift({id:uid(),productId:p.id,name:p.name,type,qty:Math.abs(p.actual-before),before,after:p.actual,note,date:new Date().toISOString(),user:db.currentUser});
+ saveDB();render();return true;
+}
+$("menuBtn").onclick=()=>$("sidebar").classList.toggle("closed");
+$("settingsBtn").onclick=()=>{if(db.currentUser&&db.configured)go("settings");else toast("Entre no sistema primeiro.");};
+document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>go(b.dataset.page));
+document.addEventListener("click",e=>{
+ const goBtn=e.target.closest("[data-go]");if(goBtn)go(goBtn.dataset.go);
+ const tile=e.target.closest("[data-detail]");if(tile)detailProduct(tile.dataset.detail);
+ const edit=e.target.closest("[data-edit]");if(edit){$("productDialog").close();editProduct(edit.dataset.edit);}
+ const move=e.target.closest("[data-move]");if(move){const id=move.dataset.move;$("productDialog").close();go("notes");$("moveProduct").value=id;}
+ const del=e.target.closest("[data-delete-product]");if(del&&confirm("Excluir produto e manter o histórico?")){
+  db.products=db.products.filter(p=>p.id!==del.dataset.deleteProduct);saveDB();$("productDialog").close();render();toast("Produto excluído.");
+ }
+ const ds=e.target.closest("[data-delete-supplier]");if(ds&&confirm("Excluir contato?")){db.suppliers=db.suppliers.filter(s=>s.id!==ds.dataset.deleteSupplier);saveDB();render();}
+ const du=e.target.closest("[data-delete-user]");if(du&&confirm("Excluir usuário local?")){db.users=db.users.filter(u=>u.username!==du.dataset.deleteUser);saveDB();render();}
+ const wa=e.target.closest("[data-whatsapp]");if(wa){
+  const number=wa.dataset.whatsapp.replace(/\D/g,"");
+  if(number)window.open("https://wa.me/"+number,"_blank","noopener,noreferrer");
+ }
+ const reorder=e.target.closest("[data-reorder]");if(reorder){
+  const p=product(reorder.dataset.reorder);
+  if(p){go("notes");$("moveProduct").value=p.id;$("moveType").value="saida";$("moveNote").value="Pedido de reposição: "+p.name;toast("Registre a movimentação quando ela realmente acontecer.");}
+ }
+});
+$("closeDialog").onclick=()=>$("productDialog").close();
+$("loginForm").onsubmit=e=>{
+ e.preventDefault();
+ const u=$("loginUser").value.trim(),pw=$("loginPass").value;
+ const found=db.users.find(x=>x.username===u&&x.password===pw);
+ if(!found){toast("Usuário ou senha incorretos.");return;}
+ db.currentUser=u;saveDB();updateAccess();
+ if(!db.configured){$("setupScreen").classList.remove("hidden");}
+ else{go("home");}
+};
+$("setupForm").onsubmit=e=>{
+ e.preventDefault();db.title=$("systemType").value;db.company=$("companyName").value.trim();db.configured=true;saveDB();updateAccess();go("home");toast("Sistema configurado.");
+};
+$("logoutBtn").onclick=()=>{db.currentUser=null;saveDB();updateAccess();};
+$("productForm").onsubmit=e=>{
+ e.preventDefault();
+ const name=$("pName").value.trim();if(!name)return;
+ const existingId=$("editId").value;
+ const existing=existingId?product(existingId):null;
+ const p={
+ id:existingId||uid(),name,code:$("pCode").value.trim(),category:$("pCategory").value.trim(),
+ desc:$("pDesc").value.trim(),expected:Number($("pExpected").value),
+ actual:Number($("pActual").value),min:Number($("pMin").value),
+ supplier:$("pSupplier").value.trim(),phone:$("pPhone").value.trim(),
+ photo:photoData||(existing?existing.photo:"")
+ };
+ if([p.expected,p.actual,p.min].some(n=>!Number.isInteger(n)||n<0)){toast("As quantidades devem ser inteiros não negativos.");return;}
+ if(existing){
+  const diff=p.actual-existing.actual;
+  Object.assign(existing,p);
+  if(diff!==0)db.moves.unshift({id:uid(),productId:p.id,name:p.name,type:"ajuste",qty:Math.abs(diff),before:existing.actual-diff,after:p.actual,note:"Alteração no cadastro",date:new Date().toISOString(),user:db.currentUser});
+ }else{
+  db.products.unshift(p);
+  db.moves.unshift({id:uid(),productId:p.id,name:p.name,type:"cadastro",qty:p.actual,before:0,after:p.actual,note:"Cadastro inicial",date:new Date().toISOString(),user:db.currentUser});
+ }
+ saveDB();resetProductForm();go("products");toast("Produto salvo com sucesso.");
+};
+$("cancelEditBtn").onclick=resetProductForm;
+$("pPhoto").onchange=e=>{
+ const file=e.target.files[0];if(!file)return;
+ if(!file.type.startsWith("image/")){toast("Selecione uma imagem.");return;}
+ if(file.size>8*1024*1024){toast("A imagem deve ter no máximo 8 MB.");e.target.value="";return;}
+ const reader=new FileReader();
+ reader.onload=()=>{
+  const img=new Image();
+  img.onload=()=>{
+   const canvas=document.createElement("canvas"),max=700;
+   const ratio=Math.min(1,max/Math.max(img.width,img.height));
+   canvas.width=Math.round(img.width*ratio);canvas.height=Math.round(img.height*ratio);
+   canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+   photoData=canvas.toDataURL("image/jpeg",.72);
+   $("photoPreview").src=photoData;$("photoPreview").classList.remove("hidden");
+   $("photoStatus").textContent="Foto pronta para salvar.";
+  };
+  img.onerror=()=>toast("Não foi possível processar a imagem.");
+  img.src=reader.result;
+ };
+ reader.readAsDataURL(file);
+};
+$("moveForm").onsubmit=e=>{
+ e.preventDefault();
+ const p=product($("moveProduct").value);
+ if(!p){toast("Selecione um produto.");return;}
+ const type=$("moveType").value,qty=Number($("moveQty").value),note=$("moveNote").value.trim();
+ if(recordMove(p,type,qty,note)){toast("Estoque atualizado.");$("moveNote").value="";$("moveQty").value=1;}
+};
+$("supplierForm").onsubmit=e=>{
+ e.preventDefault();
+ db.suppliers.unshift({id:uid(),name:$("sName").value.trim(),phone:$("sPhone").value.trim(),email:$("sEmail").value.trim(),note:$("sNote").value.trim()});
+ saveDB();$("supplierForm").reset();render();toast("Contato salvo.");
+};
+$("userForm").onsubmit=e=>{
+ e.preventDefault();
+ const username=$("newUsername").value.trim(),password=$("newPassword").value;
+ if(db.users.some(u=>u.username.toLowerCase()===username.toLowerCase())){toast("Esse usuário já existe.");return;}
+ db.users.push({username,password});saveDB();$("userForm").reset();render();toast("Usuário local criado.");
+};
+$("settingsForm").onsubmit=e=>{
+ e.preventDefault();db.title=$("cfgTitle").value;db.company=$("cfgCompany").value.trim();db.language=$("cfgLang").value;
+ saveDB();updateAccess();render();toast("Configurações salvas.");
+};
+$("passwordForm").onsubmit=e=>{
+ e.preventDefault();
+ const user=db.users.find(u=>u.username===db.currentUser);
+ if(!user||user.password!==$("oldPassword").value){toast("Senha atual incorreta.");return;}
+ user.password=$("newAdminPassword").value;saveDB();$("passwordForm").reset();toast("Senha local alterada.");
+};
+$("productSearch").oninput=renderProducts;
+$("historySearch").oninput=renderHistory;
+$("exportBtn").onclick=()=>{
+ const blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="backup-almoxarifado-"+today()+".json";a.click();URL.revokeObjectURL(url);
+};
+$("importFile").onchange=e=>{
+ const f=e.target.files[0];if(!f){pendingImport=null;return;}
+ const r=new FileReader();
+ r.onload=()=>{try{
+  const obj=JSON.parse(r.result);
+  if(!obj||!Array.isArray(obj.products)||!Array.isArray(obj.moves)||!Array.isArray(obj.users))throw Error("Formato inválido");
+  pendingImport=obj;toast("Backup validado. Clique em Importar backup.");
+ }catch(err){pendingImport=null;toast("Arquivo de backup inválido.");}};
+ r.readAsText(f);
+};
+$("importBtn").onclick=()=>{
+ if(!pendingImport){toast("Selecione um backup JSON válido.");return;}
+ if(!confirm("Substituir todos os dados locais pelos dados do backup?"))return;
+ db={...initial(),...pendingImport,currentUser:null};
+ saveDB();pendingImport=null;updateAccess();toast("Backup restaurado. Entre novamente.");
+};
+$("clearDataBtn").onclick=()=>{
+ if(!confirm("Isso apagará todos os dados locais deste sistema. Exporte um backup antes. Continuar?"))return;
+ localStorage.removeItem(DBKEY);db=initial();updateAccess();toast("Dados locais apagados.");
+};
+updateAccess();
+if(db.currentUser&&db.configured){go("home");}
+else if(db.currentUser&&!db.configured){$("setupScreen").classList.remove("hidden");}
+else{$("loginScreen").classList.remove("hidden");}
+</script>
 </body>
 </html>
